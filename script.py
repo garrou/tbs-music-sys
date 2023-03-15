@@ -1,6 +1,7 @@
 import pandas as pd
 import tkinter as tk
 from tkinter import messagebox
+import webbrowser
 
 class App(tk.Tk):
     
@@ -26,6 +27,9 @@ class App(tk.Tk):
 
         self.listbox = tk.Listbox(self.lower_frame, font=40) 
         self.listbox.place(relwidth=1, relheight=1)
+        self.listbox.bind('<<ListboxSelect>>', self.launch_browser)
+
+        self.artists_urls = {}
 
     def extract_users_artists(self, path_data: str, min_weight: int) -> pd.DataFrame:
 
@@ -107,17 +111,28 @@ class App(tk.Tk):
         df_artists_scores = self.recommended_artists(similars_users_artists, similars_users)
 
         # Get artists and keep only name and id
-        df_artists = pd.read_csv('artists.dat', sep="\t", usecols=['id', 'name'])
+        df_artists = pd.read_csv('artists.dat', sep="\t", usecols=['id', 'name', 'url'])
 
         # Join artists and recommended
-        df_res = df_artists.merge(df_artists_scores, left_on='id', right_on='artistID')[['id', 'name']]
+        df_res = df_artists.merge(df_artists_scores, left_on='id', right_on='artistID')
 
-        return df_res
+        return df_res[['id', 'name', 'url']]
 
     def generate_list(self, df: pd.DataFrame) -> None:
 
+        self.artists_urls = {}
+
         for artist in df.values:
-            self.listbox.insert(artist[0], artist[1])  
+            self.artists_urls[artist[1]] = artist[2]
+            self.listbox.insert(artist[0], artist[1]) 
+
+    def launch_browser(self, event):
+        selection = event.widget.curselection()
+        
+        if selection:
+            name = event.widget.get(selection[0]) 
+            url = self.artists_urls[name]
+            webbrowser.open(url)
 
     def check_users_and_get(self, user_id: str):
 
