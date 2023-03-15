@@ -6,7 +6,7 @@ def extract_users_artists(path_data: str, min_weight: int) -> pd.DataFrame:
     # Keep weight greater than 100
     return df[df['weight'] > min_weight]
 
-def create_normalize_matrix(df: pd.DataFrame) -> pd.DataFrame:
+def create_normalized_matrix(df: pd.DataFrame) -> pd.DataFrame:
     # Create a matrix user artist weight
     matrix = df.pivot_table(index='userID', columns='artistID', values='weight')
 
@@ -56,7 +56,7 @@ def get_artists_to_listen_by_user(user_id: int):
     
     ua_df = extract_users_artists('users_artists.dat', 100)
 
-    matrix_norm = create_normalize_matrix(ua_df)
+    matrix_norm = create_normalized_matrix(ua_df)
 
     # User similarity using Pearson correlation
     matrix_user_similarity = matrix_norm.T.corr()
@@ -80,8 +80,19 @@ def get_artists_to_listen_by_user(user_id: int):
     df_artists = pd.read_csv('artists.dat', sep="\t", usecols=['id', 'name'])
 
     # Join artists and recommended
-    df_res = df_artists.merge(df_artists_scores, left_on='id', right_on='artistID')[['id', 'name', 'score']]
+    df_res = df_artists.merge(df_artists_scores, left_on='id', right_on='artistID')[['id', 'name']]
 
     print(df_res.head(10))
 
-get_artists_to_listen_by_user(965)
+def main():
+    
+    df_users_artists = extract_users_artists('users_artists.dat', 100)
+
+    user_id = int(input('Enter a user id between 2 and 2100 : '))
+
+    if not df_users_artists[df_users_artists['userID'] == user_id].empty:
+        get_artists_to_listen_by_user(user_id)
+    else:
+        print('This user not exists')
+
+main()
