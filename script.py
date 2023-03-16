@@ -14,20 +14,27 @@ class App(tk.Tk):
         self.canvas.pack()
 
         self.frame = tk.Frame(self, bg='#080808', bd=5)
-        self.frame.place(relx=0.5, rely=0.1, relwidth=0.75, relheight=0.1, anchor='n')
+        self.frame.place(relx=0.5, rely=0.05, relwidth=0.75, relheight=0.2, anchor='n')
+
+        self.title = tk.Label(self.frame, font=15, bg='#FFFFFF')
+        self.title.place(relx=0.1, rely=0.1, relwidth=0.8, relheight=0.4)
+        self.title['text'] = 'Enter a user id (from 2 to 2100)'
 
         self.entry = tk.Entry(self.frame, font=40)
-        self.entry.place(relwidth=0.65, relheight=1)
+        self.entry.place(relx=0.1, rely=0.6, relwidth=0.5, relheight=0.5)
 
-        self.button = tk.Button(self.frame, text="Launch", font=40, command=lambda: self.check_users_and_get(self.entry.get()))
-        self.button.place(relx=0.7, relheight=1, relwidth=0.3)
+        self.button = tk.Button(self.frame, text="Launch", bg='#FFFFFF', font=40, command=lambda: self.check_users_and_get(self.entry.get()))
+        self.button.place(relx=0.7, rely=0.6, relheight=0.5, relwidth=0.2)
 
         self.lower_frame = tk.Frame(self, bg='#080808', bd=10)
-        self.lower_frame.place(relx=0.5, rely=0.25, relwidth=0.75, relheight=0.6, anchor='n')
+        self.lower_frame.place(relx=0.5, rely=0.25, relwidth=0.75, relheight=0.70, anchor='n')
 
-        self.listbox = tk.Listbox(self.lower_frame, font=40) 
-        self.listbox.place(relwidth=1, relheight=1)
+        self.listbox = tk.Listbox(self.lower_frame, font=40, bg='#FFFFFF') 
+        self.listbox.place(relwidth=1, relheight=0.9)
         self.listbox.bind('<<ListboxSelect>>', self.launch_browser)
+
+        self.label = tk.Label(self.lower_frame, font=15, bg='#FFFFFF')
+        self.label.place(rely=0.9, relwidth=1, relheight=0.1)
 
         self.artists_urls = {}
 
@@ -41,12 +48,10 @@ class App(tk.Tk):
     def create_normalized_matrix(self, df: pd.DataFrame) -> pd.DataFrame:
 
         # Create a matrix user artist weight
-        matrix = df.pivot_table(index='userID', columns='artistID', values='weight')
-
+        matrix = pd.pivot_table(df, index='userID', columns='artistID', values = 'weight', aggfunc=sum)
+        
         # Normalize matrix
-        matrix_norm = (matrix - matrix.mean()) / matrix.std()
-
-        return matrix_norm
+        return matrix.apply(lambda x: x / float(x.sum()))
 
     def recommended_artists(self, df_similars_users_artists: pd.DataFrame, df_similars_users: pd.DataFrame) -> dict[int, int]:
 
@@ -141,12 +146,18 @@ class App(tk.Tk):
             user_id = int(user_id)
 
             if not df_users_artists[df_users_artists['userID'] == user_id].empty:
-                self.listbox.delete(0, tk.END)
+                self.clear()
                 res = self.get_artists_to_listen(user_id)
                 self.generate_list(res)
+                self.label['text'] = 'Click on artist to open web page'
+                tk.messagebox.showinfo(title="Completed", message="Completed recommendations")
             else:
                 tk.messagebox.showerror(title="Error", message="This user not exists")
         except Exception as e:
             tk.messagebox.showerror(title="Error", message="Error during computing")
 
-App(500, 500).mainloop()
+    def clear(self):
+        self.listbox.delete(0, tk.END)
+        self.label['text'] = ''
+
+App(600, 800).mainloop()
