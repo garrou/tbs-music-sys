@@ -86,7 +86,7 @@ class App(tk.Tk):
         # Sort the artists by score
         return artists_score.sort_values(by='score', ascending=False)
 
-    def get_artists_to_listen(self, user_id: int):
+    def get_artists_to_listen(self, user_id: int) -> pd.DataFrame:
     
         ua_df = self.extract_users_artists('users_artists.dat', 100)
 
@@ -126,7 +126,7 @@ class App(tk.Tk):
             self.artists_urls[artist[1]] = artist[2]
             self.listbox.insert(artist[0], artist[1]) 
 
-    def launch_browser(self, event):
+    def launch_browser(self, event) -> None:
         selection = event.widget.curselection()
         
         if selection:
@@ -134,13 +134,14 @@ class App(tk.Tk):
             url = self.artists_urls[name]
             webbrowser.open(url)
 
-    def check_users_and_get(self, user_id: str):
+    def check_users_and_get(self, user_id: str) -> None:
 
         try:
             df_users_artists = self.extract_users_artists('users_artists.dat', 100)
             user_id = int(user_id)
 
             if not df_users_artists[df_users_artists['userID'] == user_id].empty:
+                self.listbox.delete(0, tk.END)
                 res = self.get_artists_to_listen(user_id)
                 self.generate_list(res)
             else:
