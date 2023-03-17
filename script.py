@@ -51,6 +51,7 @@ class App(tk.Tk):
         matrix = pd.pivot_table(df, index='userID', columns='artistID', values = 'weight', aggfunc=sum)
         
         # Normalize matrix
+        # return (matrix - matrix.mean()) / matrix.std()
         return matrix.apply(lambda x: x / float(x.sum()))
 
     def recommended_artists(self, df_similars_users_artists: pd.DataFrame, df_similars_users: pd.DataFrame) -> dict[int, int]:
