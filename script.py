@@ -71,9 +71,9 @@ class App(tk.Tk):
             # Loop through similar users
             for u in df_similars_users.index:
 
-                # If the artist has rating
+                # If the artist has weight
                 if pd.isna(artist_weight[u]) == False:
-                    # Score is the sum of user similarity score multiply by the artist rating
+                    # Score is the sum of user similarity score multiply by the artist weight
                     score = df_similars_users[u] * artist_weight[u]
 
                     # Add the score to the total score for the artist so far
